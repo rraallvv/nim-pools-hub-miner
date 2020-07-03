@@ -1,36 +1,39 @@
-osx_image: xcode8.3
-sudo: required
-dist: trusty
-language: c
 matrix:
   include:
-  - os: osx
   - os: linux
-    env: CC=clang CXX=clang++ npm_config_clang=1
-    compiler: clang
-cache:
-  directories:
-  - node_modules
-  - "$HOME/.electron"
-  - "$HOME/.cache"
-addons:
-  apt:
-    packages:
-    - libgnome-keyring-dev
-    - icnsutils
-before_install:
-- mkdir -p /tmp/git-lfs && curl -L https://github.com/github/git-lfs/releases/download/v1.2.1/git-lfs-$([
-  "$TRAVIS_OS_NAME" == "linux" ] && echo "linux" || echo "darwin")-amd64-1.2.1.tar.gz
-  | tar -xz -C /tmp/git-lfs --strip-components 1 && /tmp/git-lfs/git-lfs pull
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install --no-install-recommends -y icnsutils graphicsmagick xz-utils; fi
-install:
-- nvm install 10
-- curl -o- -L https://yarnpkg.com/install.sh | bash
-- source ~/.bashrc
-- npm install -g xvfb-maybe
-- yarn
+    language: node_js
+    node_js: '11.15'
+  - os: osx
+    osx_image: xcode9.4
+    language: node_js
+    node_js: '11.15'
+  - os: windows
+    language: node_js
+    node_js: '11.15'
 script:
-- yarn run build
-branches:
-  only:
-  - master
+  - |
+    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      npm install;
+      npm run build && ls -la build;
+    elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      npm install;
+      npm run build && ls -la build;
+    elif [ "$TRAVIS_OS_NAME" == "windows" ]; then
+      npm install;
+      npm run build && ls -la build;
+    fi
+deploy:
+  provider: releases
+  api_key:
+    secure: lvfHG+1n77XnDdFwzF/EhcYA/f+ty7utkTBAWt8hiktI73PQK4yGZUPNNNVA/glArlqS3+SPmhnn8jh8tBQ+5mQ58/+dPu9G/KAWe1NLt+Rx6mV/zDaJE5fBUsq5OjOPZHNVkQ6q/lx/ceuJ2WRxyMr9JWrx4Ufr1sf9OgewpBuidsyaMnmN+z/R6tSV7fpcVmMHUbE8TIWBqemNa9KGOb+I0SSNIVrKwmerRw6AORm0+PjPBortP0XMqEskCe2EtNjvwfDOmBoWtvCWOoBlWI5GqJTu0m/aFlyQ3HvH0BgDuRYNfz2clTGtbEYeHLjfrpJzQnsRm9PXQg2IYWdBho3FLAafyvwrC1RKZsFmmigQMGi+bq3wGrTmjEevhFaY6P0EsAFXGvxaCXdG2xd2bBAy6PT6pq3DPJe7jIx77P5G2QEE+arLjN2/YFvRRmykYStlxEtWWo+M6Qkb1TwChtQ2ztHB58qQKN7x32qXyt7rjycJHjDw9aaISGOEsRbhxu/XoSDXK8h98FV43DxlkKSIYUuYqRdSJ8qQk/LgE2Wk1NQbx8XtPmRtsuKICh/sLr0DNGPtJG1PlXe8YwgMe25XaCcZs6q51FI0+shwaY1a44v78UdogUNdN8WPRDd8oAJi5pbaV50OmzjeyFyDpRVBEZ8bZQPARI//3MMB0Yk=
+  file:
+    #- 'build/nim-pools-hub-miner_0.0.12_amd64.snap'
+    - 'build/NIM Pools Hub Miner-0.0.12.AppImage'
+    - 'build/NIM Pools Hub Miner-0.0.12-mac.zip'
+    - 'build/NIM Pools Hub Miner-0.0.12.dmg'
+    - 'build/NIM Pools Hub Miner-0.0.12.dmg.blockmap'
+    - 'build/NIM Pools Hub Miner Setup 0.0.12.exe'
+    - 'build/NIM Pools Hub Miner Setup 0.0.12.exe.blockmap'
+  skip_cleanup: 'true'
+  on:
+    tags: true
